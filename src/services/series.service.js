@@ -1,4 +1,5 @@
 const serieSchema = require('../models/series.models');
+const Boom = require('@hapi/boom');
 
 class SeriesService {
   async createSeries(serie) {
@@ -11,7 +12,10 @@ class SeriesService {
     });
   }
   async showSeries(seriesId) {
-    return serieSchema.findById({ _id: seriesId });
+    return serieSchema.findById({ _id: seriesId }).then((series) => {
+      if (!series) throw Boom.notFound('Series not found');
+      return series;
+    });
   }
   async editSeries(
     seriesId,
@@ -20,14 +24,19 @@ class SeriesService {
     original_lenguage,
     features_seasons
   ) {
-    return serieSchema.updateOne(
-      { _id: seriesId },
-      { serie, number_seasons, original_lenguage, features_seasons }
-    );
+    return serieSchema.findById({ _id: seriesId }).then((series) => {
+      if (!series) throw Boom.notFound('Series not found');
+      return serieSchema.updateOne(
+        { _id: seriesId },
+        { serie, number_seasons, original_lenguage, features_seasons }
+      );
+    });
   }
   async removeSeries(seriesId) {
-    const removedSeries = serieSchema.findById({ _id: seriesId });
-    return serieSchema.deleteOne(removedSeries);
+    return serieSchema.findById({ _id: seriesId }).then((series) => {
+      if (!series) throw Boom.notFound('Series not found');
+      return serieSchema.deleteOne(series);
+    });
   }
 
   async getSeriesByActorName(actorName) {
@@ -36,6 +45,9 @@ class SeriesService {
     const matchedSeries = series.filter((serie) =>
       serie.features_seasons.cast.includes(actorName)
     );
+
+    if (matchedSeries.length === 0)
+      throw Boom.notFound('No series featuring that actor');
 
     //Solución 2
     // const matchedSeries = [];
@@ -49,7 +61,12 @@ class SeriesService {
   }
 
   async showSerieByDate(premier_date) {
-    return serieSchema.find({ 'features_seasons.premier_date': premier_date });
+    const data = await serieSchema.find({
+      'features_seasons.premier_date': premier_date,
+    });
+    if (data.length === 0)
+      throw Boom.notFound('No series premiered on that date');
+    return data;
   }
 }
 

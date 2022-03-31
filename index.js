@@ -5,6 +5,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const routerApi = require('./src/routes');
 
+const {
+  logErrors,
+  errorHandler,
+  boomErrorHandler,
+} = require('./src/handlers/errors.handler');
+
 const app = express();
 
 app.listen(port, () => {
@@ -19,3 +25,7 @@ mongoose
 app.use(express.json());
 
 routerApi(app);
+
+app.use(logErrors);
+app.use(boomErrorHandler);
+app.use(errorHandler);
