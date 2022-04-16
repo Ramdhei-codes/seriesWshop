@@ -54,3 +54,17 @@ Content-Type: application/json
 
 ###
 DELETE http://localhost:5000/api/v2/series/6245a76ae1c7c90e1cf51e6a HTTP/1.1
+
+
+###
+POST http://localhost:5000/api/v1/email HTTP/1.1
+Content-Type: application/json
+
+{
+    "from": "Excited User <mailgun@sandbox-123.mailgun.org>",
+    " to": [
+        "ramdhei2002@gmail.com"
+    ],
+    "subject": "Hello",
+    "text": "Testing some Mailgun awesomness!"
+}
